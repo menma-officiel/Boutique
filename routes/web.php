@@ -16,6 +16,7 @@ Route::post('/orders/{order}/send-whatsapp', [OrderController::class, 'sendWhats
 Route::prefix('admin')->name('admin.')->middleware(['auth','admin'])->group(function() {
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::resource('comments', App\Http\Controllers\Admin\CommentController::class)->only(['index','destroy','update']);
+    Route::post('comments/bulk', [App\Http\Controllers\Admin\CommentController::class, 'bulk'])->name('comments.bulk');
     Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update_status');
 });

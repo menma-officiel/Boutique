@@ -11,10 +11,59 @@ class CommentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $comments = Comment::with('product')->latest()->paginate(20);
-        return view('admin.comments.index', compact('comments'));
+        $query = Comment::with('product')->latest();
+
+        if ($request->filled('search')) {
+            $q = $request->input('search');
+            $query->where(function($w) use ($q) {
+                $w->where('author_name', 'like', "%{$q}%")
+                  ->orWhere('content', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('product_id')) {
+            $query->where('product_id', $request->input('product_id'));
+        }
+
+        if ($request->filled('approved')) {
+            $approved = (int) $request->input('approved');
+            $query->where('approved', $approved);
+        }
+
+        $comments = $query->paginate(20)->appends($request->only(['search','product_id','approved']));
+
+        $products = \App\Models\Product::select('id','name')->orderBy('name')->get();
+
+        return view('admin.comments.index', compact('comments','products'));
+    }
+
+    /**
+     * Bulk actions for comments (approve/disapprove/delete)
+     */
+    public function bulk(Request $request)
+    {
+        $data = $request->validate([
+            'action' => 'required|string|in:approve,disapprove,delete',
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:comments,id',
+        ]);
+
+        $ids = $data['ids'];
+
+        if ($data['action'] === 'approve') {
+            Comment::whereIn('id', $ids)->update(['approved' => 1]);
+            $message = 'Commentaires approuvés.';
+        } elseif ($data['action'] === 'disapprove') {
+            Comment::whereIn('id', $ids)->update(['approved' => 0]);
+            $message = 'Commentaires désapprouvés.';
+        } else {
+            Comment::whereIn('id', $ids)->delete();
+            $message = 'Commentaires supprimés.';
+        }
+
+        return redirect()->route('admin.comments.index')->with('success', $message);
     }
 
     /**
