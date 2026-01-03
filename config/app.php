@@ -99,6 +99,9 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /* WhatsApp number for orders (international format, digits only) */
+    'whatsapp_number' => env('WHATSAPP_NUMBER', null),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
