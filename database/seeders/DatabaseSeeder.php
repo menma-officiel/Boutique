@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@menma.test',
             'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
 
         // Products, comments, orders

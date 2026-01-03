@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register the admin middleware alias to ensure it's available in tests and runtime
+        if (class_exists(\Illuminate\Support\Facades\Route::class)) {
+            \Illuminate\Support\Facades\Route::aliasMiddleware('admin', \App\Http\Middleware\EnsureUserIsAdmin::class);
+        }
     }
 }
