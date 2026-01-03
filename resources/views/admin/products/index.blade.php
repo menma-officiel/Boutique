@@ -31,7 +31,7 @@
                 <td class="border px-3 py-2">{{ $p->stock }}</td>
                 <td class="border px-3 py-2">{{ $p->is_active ? 'Oui' : 'Non' }}</td>
                 <td class="border px-3 py-2">
-                    <a class="text-blue-600" href="{{ route('admin.products.edit', $p) }}">Edit</a>
+                    <a class="text-blue-600" href="{{ route('admin.products.edit', $p) }}">{{ __('Edit') }}</a>
                     <form class="inline" method="POST" action="{{ route('admin.products.destroy', $p) }}">
                         @csrf
                         @method('DELETE')

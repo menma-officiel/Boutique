@@ -15,6 +15,28 @@ Menma Shop — plateforme e‑commerce Full‑Stack optimisée pour la conversio
 - Compiler les assets : `npm run build`
 - Démarrer le serveur local : `php artisan serve`
 
+### Docker (local development)
+
+Une configuration Docker basique est fournie (`Dockerfile` + `docker-compose.yml`) pour lancer l'application avec PostgreSQL et Nginx.
+
+- Build & start :
+
+```bash
+docker compose up --build -d
+```
+
+- L'application sera disponible sur : http://localhost:8080
+
+- Exemple d'URL de connexion Postgres pour la variable d'environnement :
+
+```
+DATABASE_URL=postgres://postgres:postgres@db:5432/menma
+```
+
+- Après `docker compose up` exécuter migrations / seeders depuis le conteneur `app` :
+  - `docker compose exec app php artisan migrate --seed`
+
+
 ## Fonctionnalités initiales
 - Catalogue produits (listing / fiche produit) optimisé mobile (formulaire compact, input téléphonique, bouton sticky)
 - Formulaire de commande simplifié -> page de confirmation + bouton « Ouvrir WhatsApp » (deep link `whatsapp://` mobile → `api.whatsapp.com` fallback web) avec message pré‑rempli
