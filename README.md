@@ -16,8 +16,8 @@ Menma Shop — plateforme e‑commerce Full‑Stack optimisée pour la conversio
 - Démarrer le serveur local : `php artisan serve`
 
 ## Fonctionnalités initiales
-- Catalogue produits (listing / fiche produit)
-- Formulaire de commande simplifié -> redirection WhatsApp (wa.me) avec message pré‑rempli
+- Catalogue produits (listing / fiche produit) optimisé mobile (formulaire compact, input téléphonique, bouton sticky)
+- Formulaire de commande simplifié -> page de confirmation + bouton « Ouvrir WhatsApp » (deep link `whatsapp://` mobile → `api.whatsapp.com` fallback web) avec message pré‑rempli
 - Modèles Eloquent : `Product`, `Order`, `Comment`
 - Auth scafolding (Laravel Breeze - Blade) pour accès admin
 - Seeders/factories pour données d'exemple

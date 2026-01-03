@@ -48,15 +48,21 @@ class OrderController extends Controller
         $product = $order->product;
         $quantity = $order->quantity;
 
-        $url = $this->buildWhatsappUrl($order, $product, $quantity);
+        $urls = $this->buildWhatsappUrls($order, $product, $quantity);
 
         $order->whatsapp_sent = true;
         $order->save();
 
-        return redirect()->away($url);
+        // If AJAX/JSON expected, return URLs and let client open app/web link
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json($urls);
+        }
+
+        // Fallback: redirect to web URL
+        return redirect()->away($urls['web']);
     }
 
-    private function buildWhatsappUrl(Order $order, Product $product, int $quantity = 1): string
+    private function buildWhatsappUrls(Order $order, Product $product, int $quantity = 1): array
     {
         $whatsapp = config('app.whatsapp_number') ?: env('WHATSAPP_NUMBER');
 
@@ -74,9 +80,14 @@ class OrderController extends Controller
 
         if ($whatsapp) {
             $adminPhone = preg_replace('/[^0-9]/', '', $whatsapp);
-            return "https://api.whatsapp.com/send?phone={$adminPhone}&text={$encoded}";
+            $web = "https://api.whatsapp.com/send?phone={$adminPhone}&text={$encoded}";
+            $app = "whatsapp://send?phone={$adminPhone}&text={$encoded}";
+
+            return ['app' => $app, 'web' => $web];
         }
 
-        return "https://wa.me/?text={$encoded}";
+        $web = "https://wa.me/?text={$encoded}";
+
+        return ['app' => $web, 'web' => $web];
     }
 }

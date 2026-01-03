@@ -14,16 +14,58 @@
         <p class="text-sm text-gray-500 mt-2">En cliquant sur « Ouvrir WhatsApp », vous ouvrirez WhatsApp avec un message pré-rempli contenant les détails de la commande. Le message sera envoyé depuis votre application WhatsApp.</p>
     </div>
 
-    <form method="POST" action="{{ route('orders.send_whatsapp', $order) }}">
+    <form id="order-form" method="POST" action="{{ route('orders.send_whatsapp', $order) }}">
         @csrf
         <div class="flex gap-3">
-            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Ouvrir WhatsApp</button>
+            <button id="open-whatsapp" type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Ouvrir WhatsApp</button>
             <a href="{{ route('products.show', $product) }}" class="px-4 py-2 border rounded text-gray-700">Retour au produit</a>
         </div>
     </form>
 
     <div class="mt-4 text-sm text-gray-500">
-        Vous pouvez aussi <a target="_blank" rel="noopener" href="{{ $url }}" class="text-blue-600 underline">ouvrir WhatsApp dans un nouvel onglet</a>.
+        Vous pouvez aussi <a id="open-whatsapp-link" target="_blank" rel="noopener" href="{{ $url }}" class="text-blue-600 underline">ouvrir WhatsApp dans un nouvel onglet</a>.
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('order-form');
+        const openLink = document.getElementById('open-whatsapp-link');
+
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const url = form.action;
+            const token = document.querySelector('input[name="_token"]').value;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                const data = await res.json();
+                const appUrl = data.app;
+                const webUrl = data.web;
+
+                // Try to open native app first
+                if (appUrl) window.location = appUrl;
+
+                // Fallback to web after short delay
+                setTimeout(function(){ window.location = webUrl; }, 800);
+
+            } catch (err) {
+                // On error, fallback to web link
+                window.open(openLink.href, '_blank');
+            }
+        });
+    });
+    </script>
 </div>
 @endsection
