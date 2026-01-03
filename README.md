@@ -36,6 +36,18 @@ DATABASE_URL=postgres://postgres:postgres@db:5432/menma
 - Après `docker compose up` exécuter migrations / seeders depuis le conteneur `app` :
   - `docker compose exec app php artisan migrate --seed`
 
+## Déploiement sur Render (Postgres)
+
+- Créez un service PostgreSQL dans Render et récupérez l'**external database URL** (format `postgresql://user:pass@host/database`).
+- Dans l'onglet Environment de votre service Web, ajoutez :
+  - `DATABASE_URL` = *external database url* (recommandé)
+  - ou `DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` si vous préférez les variables individuelles
+  - `DB_SSLMODE=require` (si nécessaire)
+  - `APP_KEY` (généré via `php artisan key:generate --show`)
+  - `APP_ENV=production`, `APP_DEBUG=false`
+- Le fichier `render.yaml` est fourni : il exécute `composer install` en build et lance `scripts/deploy.sh` puis `php artisan serve` au démarrage.
+- `scripts/deploy.sh` exécutera les migrations et mettra en cache la configuration/routes. Vous pouvez aussi exécuter les commandes manuellement via le Dashboard Render (Console).
+- Si vous utilisez Docker, le `Dockerfile` installe `pdo_pgsql` (libpq) — vérifiez que votre environnement de déploiement utilise bien ce Dockerfile ou une image PHP avec `pdo_pgsql` activé.
 
 ## Fonctionnalités initiales
 - Catalogue produits (listing / fiche produit) optimisé mobile (formulaire compact, input téléphonique, bouton sticky)
