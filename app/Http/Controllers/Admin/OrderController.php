@@ -10,7 +10,9 @@ class OrderController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth','admin']);
+        if (method_exists($this, 'middleware')) {
+            $this->middleware(['auth','admin']);
+        }
     }
 
     public function index(Request $request)
