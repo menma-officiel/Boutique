@@ -10,6 +10,7 @@ Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::post('/orders/{order}/send-whatsapp', [OrderController::class, 'sendWhatsapp'])->name('orders.send_whatsapp');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

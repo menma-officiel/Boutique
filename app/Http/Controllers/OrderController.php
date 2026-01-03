@@ -34,31 +34,49 @@ class OrderController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        $whatsapp = config('app.whatsapp_number') ?: env('WHATSAPP_NUMBER');
+        // Build the WhatsApp URL but do not redirect automatically. We show a confirmation page
+        $url = $this->buildWhatsappUrl($order, $product, $quantity);
 
-        $message = sprintf("Commande pour %s - %s x%d\nNom: %s\nTéléphone: %s\nAdresse: %s\nTotal: %s €",
-            $product->name,
-            $product->name,
-            $quantity,
-            $order->customer_name,
-            $order->customer_phone,
-            $order->customer_address ?? '-',
-            number_format($order->total_price, 2)
-        );
+        return view('orders.confirm', compact('order', 'product', 'quantity', 'url'));
+    }
 
-        $encoded = rawurlencode($message);
+    /**
+     * Send WhatsApp: mark as sent and redirect to api.whatsapp
+     */
+    public function sendWhatsapp(Request $request, Order $order)
+    {
+        $product = $order->product;
+        $quantity = $order->quantity;
 
-        if ($whatsapp) {
-            $url = "https://wa.me/" . preg_replace('/[^0-9]/', '', $whatsapp) . "?text={$encoded}";
-        } else {
-            // fallback: open generic wa.me with message
-            $url = "https://wa.me/?text={$encoded}";
-        }
+        $url = $this->buildWhatsappUrl($order, $product, $quantity);
 
-        // Mark whatsapp_sent true if we will rely on user to click link
         $order->whatsapp_sent = true;
         $order->save();
 
         return redirect()->away($url);
+    }
+
+    private function buildWhatsappUrl(Order $order, Product $product, int $quantity = 1): string
+    {
+        $whatsapp = config('app.whatsapp_number') ?: env('WHATSAPP_NUMBER');
+
+        $messageLines = [
+            "Commande: {$product->name} x{$quantity}",
+            "Order ID: {$order->id}",
+            "Nom: {$order->customer_name}",
+            "Téléphone client: {$order->customer_phone}",
+            "Adresse: " . ($order->customer_address ?? '-'),
+            "Total: " . number_format($order->total_price, 2) . ' €',
+        ];
+
+        $message = implode("\n", $messageLines);
+        $encoded = rawurlencode($message);
+
+        if ($whatsapp) {
+            $adminPhone = preg_replace('/[^0-9]/', '', $whatsapp);
+            return "https://api.whatsapp.com/send?phone={$adminPhone}&text={$encoded}";
+        }
+
+        return "https://wa.me/?text={$encoded}";
     }
 }
